@@ -4,22 +4,9 @@ namespace NotificationChannels\TangoCard;
 
 use NotificationChannels\TangoCard\Exceptions\CouldNotSendNotification;
 use Illuminate\Notifications\Notification;
-use RaasLib\Exceptions\RaasClientException;
-use RaasLib\Models\CreateOrderRequestModel;
-use RaasLib\Models\NameEmailModel;
-use RaasLib\RaasClient;
-
 
 class TangoCardChannel
 {
-    /** @var RaasClient */
-    protected $tangoCard;
-
-    public function __construct(RaasClient $raasClient)
-    {
-        $this->tangoCard = $raasClient;
-    }
-
     /**
      * Send the given notification.
      *
@@ -38,35 +25,27 @@ class TangoCardChannel
 
         $messageContent = $message->toArray();
 
-        $orders = $this->tangoCard->getOrders();
+        $order = [
+            'accountIdentifier' => config('services.tangocard.account'),
+            'customerIdentifier' => config('services.tangocard.customer'),
+            'sendEmail' => true,
+            'amount' => $messageContent['amount'],
+            'utid' => $messageContent['utid'],
+            'subject' => $messageContent['subject'],
+            'body' => $messageContent['body'],
+        ];
 
         if ($recipient = $notifiable->routeNotificationFor('TangoCard')) {
-            $recipientModel = new NameEmailModel($recipient['email'], $recipient['name'], null);
+            $order['recipient'] = ['email' => $recipient['email'], 'firstName' => $recipient['name']];
         } else {
             throw CouldNotSendNotification::invalidRecipient();
         }
 
-        $orderModel = new CreateOrderRequestModel(
-            'account1',
-            $messageContent['amount'],
-            'customer1',
-            true,
-            $messageContent['utid'],
-            null,
-            $messageContent['subject'],
-            null,
-            $messageContent['body'],
-            $recipientModel,
-            null,
-            null
-        );
+        $body = \Unirest\Request\Body::json($order);
+        \Unirest\Request::auth(config('services.tangocard.platform_name'), config('services.tangocard.platform_key'));
 
-        try {
-            $orderResult = $orders->createOrder($orderModel);
-        } catch (RaasClientException $exception) {
-            var_dump($exception);
-            throw CouldNotSendNotification::serviceRespondedWithAnError($exception->getMessage());
-        }
+        $headers = array('Accept' => 'application/json', 'Content-Type' => 'application/json');
 
+        $response = \Unirest\Request::post('https://integration-api.tangocard.com/raas/v2/orders', $headers, $body);
     }
 }

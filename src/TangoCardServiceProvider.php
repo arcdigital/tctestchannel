@@ -4,9 +4,7 @@ namespace NotificationChannels\TangoCard;
 
 use Illuminate\Support\ServiceProvider;
 use NotificationChannels\TangoCard\Exceptions\InvalidConfiguration;
-use RaasLib\RaasClient;
-use RaasLib\Configuration;
-use RaasLib\Environments;
+use Unirest\Request;
 
 class TangoCardServiceProvider extends ServiceProvider
 {
@@ -16,7 +14,7 @@ class TangoCardServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->app->when(TangoCardChannel::class)
-            ->needs(RaasClient::class)
+            ->needs(Request::class)
             ->give(function () {
                 $config = config('services.tangocard');
 
@@ -27,11 +25,9 @@ class TangoCardServiceProvider extends ServiceProvider
                 //$environmentConstant = strtoupper($config['environment']);
                 //Configuration::$environment = Environments::GAMMA;
 
-                return new RaasClient(
-                    $config['platform_name'],
-                    $config['platform_key']
-                );
-                
+
+
+                return ;
             });
     }
 
