@@ -1,0 +1,40 @@
+{
+    "name": "arcdigital/tangocard-notification-channel",
+    "description": "With this notification channel, you can integrate a global reward or incentive program into your app.",
+    "homepage": "https://github.com/arcdigital/tangocard-notification-channel",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Anand Capur",
+            "email": "git@anand.io",
+            "homepage": "https://anand.io"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.4",
+        "guzzlehttp/guzzle": "^6.3",
+        "illuminate/notifications": "5.3.*|5.4.*",
+        "illuminate/support": "5.3.*|5.4.*",
+        "tangocard/raas": "^1.1.2"
+    },
+    "require-dev": {
+        "mockery/mockery": "^0.9.5",
+        "phpunit/phpunit": "4.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "NotificationChannels\\TangoCard\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NotificationChannels\\TangoCard\\Test\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
