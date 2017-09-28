@@ -2,6 +2,7 @@
 
 namespace NotificationChannels\TangoCard;
 
+use GuzzleHttp\Client as GuzzleClient;
 use NotificationChannels\TangoCard\Exceptions\CouldNotSendNotification;
 use Illuminate\Notifications\Notification;
 
@@ -41,16 +42,25 @@ class TangoCardChannel
             throw CouldNotSendNotification::invalidRecipient();
         }
 
-        $body = \Unirest\Request\Body::json($order);
-        \Unirest\Request::auth(config('services.tangocard.platform_name'), config('services.tangocard.platform_key'));
+        $config = config('services.tangocard');
 
-        $headers = array('Accept' => 'application/json', 'Content-Type' => 'application/json');
+        if ($config['environment'] == 'production') {
+            $baseUri = 'https://api.tangocard.com/raas/v2/';
+        } else {
+            $baseUri = 'https://integration-api.tangocard.com/raas/v2/';
+        }
 
-        $endpoint = 'https://integration-api.tangocard.com/raas/v2/orders';
+        $client = new GuzzleClient([
+            'base_uri' => $baseUri,
+            'auth' => [$config['platform_name'], $config['platform_key']],
+        ]);
 
-        if (config('services.tangocard.environment') == 'production')
-            $endpoint = 'https://api.tangocard.com/raas/v2/orders';
+        $response = $client->post('orders', [
+            'json' => $order
+        ]);
 
-        $response = \Unirest\Request::post($endpoint, $headers, $body);
+        if ($response->getStatusCode() != 201) {
+            throw CouldNotSendNotification::serviceRespondedWithAnError($response->getBody());
+        }
     }
 }

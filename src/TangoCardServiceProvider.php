@@ -4,7 +4,6 @@ namespace NotificationChannels\TangoCard;
 
 use Illuminate\Support\ServiceProvider;
 use NotificationChannels\TangoCard\Exceptions\InvalidConfiguration;
-use Unirest\Request;
 
 class TangoCardServiceProvider extends ServiceProvider
 {
@@ -13,8 +12,12 @@ class TangoCardServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->when(TangoCardChannel::class)
-            ->needs(Request::class)
+        if (is_null(config('services.tangocard'))) {
+            throw InvalidConfiguration::configurationNotSet();
+        }
+
+        /*$this->app->when(TangoCardChannel::class)
+            ->needs(GuzzleClient::class)
             ->give(function () {
                 $config = config('services.tangocard');
 
@@ -22,13 +25,17 @@ class TangoCardServiceProvider extends ServiceProvider
                     throw InvalidConfiguration::configurationNotSet();
                 }
 
-                //$environmentConstant = strtoupper($config['environment']);
-                //Configuration::$environment = Environments::GAMMA;
+                if ($config['environment'] == 'production') {
+                    $baseUri = 'https://api.tangocard.com/raas/v2/';
+                } else {
+                    $baseUri = 'https://integration-api.tangocard.com/raas/v2/';
+                }
 
-
-
-                return ;
-            });
+                return new GuzzleClient([
+                    'base_uri' => $baseUri,
+                    'auth' => [$config['platform_name'], $config['platform_key']],
+                ]);
+            });*/
     }
 
 }
