@@ -46,6 +46,11 @@ class TangoCardChannel
 
         $headers = array('Accept' => 'application/json', 'Content-Type' => 'application/json');
 
-        $response = \Unirest\Request::post('https://integration-api.tangocard.com/raas/v2/orders', $headers, $body);
+        $endpoint = 'https://integration-api.tangocard.com/raas/v2/orders';
+
+        if (config('services.tangocard.environment') == 'production')
+            $endpoint = 'https://api.tangocard.com/raas/v2/orders';
+
+        $response = \Unirest\Request::post($endpoint, $headers, $body);
     }
 }
