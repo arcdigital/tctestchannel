@@ -3,11 +3,14 @@
 namespace NotificationChannels\TangoCard;
 
 use GuzzleHttp\Client as GuzzleClient;
+use NotificationChannels\TangoCard\Events\TangoCardSent;
 use NotificationChannels\TangoCard\Exceptions\CouldNotSendNotification;
 use Illuminate\Notifications\Notification;
 
 class TangoCardChannel
 {
+    public $responseData;
+
     /**
      * Send the given notification.
      *
@@ -34,10 +37,11 @@ class TangoCardChannel
             'utid' => $messageContent['utid'],
             'subject' => $messageContent['subject'],
             'body' => $messageContent['body'],
+            'externalRefID' => $messageContent['externalRefID'],
         ];
 
         if ($recipient = $notifiable->routeNotificationFor('TangoCard')) {
-            $order['recipient'] = ['email' => $recipient['email'], 'firstName' => $recipient['name']];
+            $order['recipient'] = ['email' => $recipient['email'], 'firstName' => $recipient['firstName'], 'lastName' => $recipient['lastName']];
         } else {
             throw CouldNotSendNotification::invalidRecipient();
         }
@@ -62,5 +66,10 @@ class TangoCardChannel
         if ($response->getStatusCode() != 201) {
             throw CouldNotSendNotification::serviceRespondedWithAnError($response->getBody());
         }
+
+        $responseBody = json_decode($response->getBody());
+
+        event(new TangoCardSent($responseBody->referenceOrderID, $responseBody->externalRefID));
+
     }
 }

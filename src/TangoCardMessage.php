@@ -11,6 +11,9 @@ class TangoCardMessage
     protected $utid;
 
     /** @var string */
+    protected $externalRefID;
+
+    /** @var string */
     protected $subject = null;
 
     /** @var string */
@@ -19,22 +22,25 @@ class TangoCardMessage
     /**
      * @param float $amount
      * @param string $utid
+     * @param string $externalRefID
      *
      * @return static
      */
-    public static function create($amount, $utid = 'U561593')
+    public static function create($amount, $utid = 'U561593', $externalRefID = null)
     {
-        return new static($amount, $utid);
+        return new static($amount, $utid, $externalRefID);
     }
 
     /**
      * @param float $amount
      * @param string $utid
+     * @param string $externalRefID
      */
-    public function __construct($amount, $utid = 'U561593')
+    public function __construct($amount, $utid = 'U561593', $externalRefID = null)
     {
         $this->amount = $amount;
         $this->utid = $utid;
+        $this->externalRefID = $externalRefID;
     }
 
     /**
@@ -61,6 +67,20 @@ class TangoCardMessage
     public function utid($value)
     {
         $this->utid = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set the externalRefID.
+     *
+     * @param string $value
+     *
+     * @return $this
+     */
+    public function externalRefID($value)
+    {
+        $this->externalRefID = $value;
 
         return $this;
     }
@@ -101,6 +121,7 @@ class TangoCardMessage
         $message = [
             'amount' => $this->amount,
             'utid' => $this->utid,
+            'externalRefID' => $this->externalRefID,
             'subject' => $this->subject,
             'body' => $this->body,
         ];
